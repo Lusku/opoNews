@@ -3,7 +3,7 @@ name: Telegram Bot Oposiciones
 on:
   schedule:
     - cron: "0 9 * * *"  # Se ejecuta todos los días a las 9:00 AM UTC
-  workflow_dispatch:  # Esto permite ejecutarlo manualmente
+  workflow_dispatch:  # Permite ejecución manual
 
 jobs:
   run-script:
@@ -17,8 +17,12 @@ jobs:
         with:
           python-version: '3.9'
 
+      - name: Ensure correct working directory
+        run: ls -la  # Muestra los archivos en el directorio actual (para depuración)
+
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r ./requirements.txt  # Asegura que usa la ruta correcta
 
       - name: Run the script
         run: python bot.py
+
