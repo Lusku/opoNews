@@ -5,9 +5,15 @@ import os
 from bs4 import BeautifulSoup
 from telegram import Bot
 
-# Configuración del bot de Telegram
+# Obtener las variables de entorno de GitHub Actions
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+# Verificar si las variables están definidas
+if not TELEGRAM_BOT_TOKEN:
+    raise ValueError("❌ ERROR: La variable TELEGRAM_BOT_TOKEN no está configurada.")
+if not TELEGRAM_CHAT_ID:
+    raise ValueError("❌ ERROR: La variable TELEGRAM_CHAT_ID no está configurada.")
 
 # URLs oficiales para consultar información sobre la oposición
 URLS_OPOSICION = {
