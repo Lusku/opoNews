@@ -2,6 +2,7 @@ import requests
 import logging
 import sqlite3
 import os
+import asyncio
 from bs4 import BeautifulSoup
 from telegram import Bot
 
@@ -87,17 +88,18 @@ def filtrar_nuevas_noticias(noticias):
     conn.close()
     return nuevas_noticias
 
-def enviar_mensaje_telegram(mensaje):
+async def enviar_mensaje_telegram(mensaje):
     """Envía un mensaje al grupo de Telegram y muestra depuración."""
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
 
     logging.info(f"📢 Enviando mensaje a chat_id={TELEGRAM_CHAT_ID}")
 
     try:
-        response = bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=mensaje, parse_mode="Markdown")
+        response = await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=mensaje, parse_mode="Markdown")
         logging.info(f"✅ Mensaje enviado con éxito: {response}")
     except Exception as e:
         logging.error(f"❌ Error al enviar mensaje: {e}")
+
 
 def tarea_diaria():
     """Función principal que consulta, filtra y envía las actualizaciones."""
@@ -111,7 +113,9 @@ def tarea_diaria():
     else:
         mensaje = "✅ No hay novedades en la oposición hoy."
 
-    enviar_mensaje_telegram(mensaje)
+    # Ejecutar la función async correctamente dentro de un loop
+    asyncio.run(enviar_mensaje_telegram(mensaje))
+
 
 # Ejecutar la tarea
 if __name__ == "__main__":
