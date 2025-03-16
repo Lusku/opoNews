@@ -12,16 +12,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: Ensure correct working directory
-        run: ls -la  # Muestra los archivos en el directorio actual (para depuración)
+      - name: Check files in directory (debug)
+        run: ls -la  # Depuración: Ver qué archivos están disponibles
 
       - name: Install dependencies
-        run: pip install -r ./requirements.txt  # Asegura que usa la ruta correcta
+        run: pip install -r requirements.txt
 
       - name: Run the script
         run: python bot.py
