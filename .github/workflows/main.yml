@@ -18,5 +18,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Show environment variables (debug)
+        run: env | grep TELEGRAM
+
       - name: Run the script
         run: python bot.py
