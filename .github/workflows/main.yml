@@ -3,6 +3,7 @@ name: Telegram Bot Oposiciones
 on:
   schedule:
     - cron: "0 9 * * *"  # Se ejecuta todos los días a las 9:00 AM UTC
+  workflow_dispatch:  # Esto permite ejecutarlo manualmente
 
 jobs:
   run-script:
