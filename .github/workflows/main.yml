@@ -8,18 +8,18 @@ on:
 jobs:
   run-script:
     runs-on: ubuntu-latest
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Check files in directory (debug)
-        run: ls -la  # Depuración: Ver qué archivos están disponibles
+      - name: Check environment variables (debug)
+        run: echo "TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are set"
 
       - name: Install dependencies
         run: pip install -r requirements.txt
-
-      - name: Show environment variables (debug)
-        run: env | grep TELEGRAM
 
       - name: Run the script
         run: python bot.py
