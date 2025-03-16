@@ -16,13 +16,18 @@ if not TELEGRAM_BOT_TOKEN:
 if not TELEGRAM_CHAT_ID:
     raise ValueError("❌ ERROR: La variable TELEGRAM_CHAT_ID no está configurada.")
 
+
+# Obtener la fecha actual
+hoy = datetime.date.today()
+url_boe = f"https://www.boe.es/boe/dias/{hoy.year}/{hoy.month:02}/{hoy.day:02}/"
+
 # URLs oficiales para consultar información sobre la oposición
 URLS_OPOSICION = {
-    "BOE": "https://www.boe.es/buscar/boe.php?campo%5B0%5D=TIT&dato%5B0%5D=cuerpo+superior+sistemas+tecnologías&operador%5B0%5D=and",
+    "BOE": url_boe,
+    "Función Pública": "https://funcionpublica.digital.gob.es/va/funcion-publica/Acceso-Empleo-Publico/Convocatorias-Personal-Funcionario/Cuerpos-escalas-generales.html",
     "Ministerio de Hacienda": "https://www.hacienda.gob.es/es-ES/Empleo%20Publico/Paginas/EmpleoPublico.aspx",
-    "INAP": "https://www.inap.es/oposiciones"
+    "INAP": "https://www.inap.es/en/cuerpo-superior-de-sistemas-y-tecnologias-de-la-informacion-de-la-administracion-del-estado"
 }
-
 # Configuración del logging
 logging.basicConfig(level=logging.INFO)
 
@@ -52,25 +57,58 @@ def obtener_noticias():
             if respuesta.status_code == 200:
                 soup = BeautifulSoup(respuesta.text, "html.parser")
 
-                # 🔹 Personalizar según la estructura de cada web 🔹
+                # 🔹 Búsqueda en BOE
                 if "boe.es" in url:
-                    items = soup.find_all("div", class_="resultado-busqueda")  # Ejemplo
-                elif "hacienda.gob.es" in url:
-                    items = soup.find_all("a", class_="enlace-noticia")  # Ejemplo
+                    items = soup.find_all("li", class_="dispo")  # Selector correcto para BOE
+                    for item in items:
+                        titulo = item.find("p").text.strip() if item.find("p") else "Sin título"
+                        enlace_tag = item.find("div", class_="enlacesDoc")
+                        enlace = enlace_tag.find("a")["href"] if enlace_tag and enlace_tag.find("a") else url
+                        if enlace.startswith("/"):
+                            enlace = f"https://www.boe.es{enlace}"
+                        noticias.append((fuente, titulo, enlace))
+
+                # 🔹 Búsqueda en Función Pública
+                elif "funcionpublica" in url:
+                    tabla = soup.find("table")
+                    filas = tabla.find("tbody").find_all("tr") if tabla else []
+                    for fila in filas:
+                        columnas = fila.find_all("td")
+                        if len(columnas) >= 3:
+                            titulo = columnas[0].text.strip()
+                            grupo = columnas[1].text.strip()
+                            oferta = columnas[2].text.strip()
+                            mensaje = f"📢 *{titulo}* \n📌 Grupo: {grupo} \n📆 Oferta de Empleo Público: {oferta}"
+                            noticias.append((fuente, mensaje, url))
+
+                # 🔹 Búsqueda en INAP
                 elif "inap.es" in url:
-                    items = soup.find_all("li", class_="noticia")  # Ejemplo
-                else:
-                    items = []
-
-                for item in items:
-                    titulo = item.text.strip()
-                    enlace = item.a["href"] if item.a else url  # Si no hay enlace, usar la URL base
-                    noticias.append((fuente, titulo, enlace))
-
+                    convocatorias = soup.find_all("h2", style="font-family: Helvetica Neue; Helvetica, Arial, sans-serif;")
+                    for h2 in convocatorias:
+                        año = h2.text.strip()
+                        lista_enlaces = h2.find_next("ul")
+                        if lista_enlaces:
+                            enlaces = lista_enlaces.find_all("a")
+                            for enlace in enlaces:
+                                titulo = f"{año} - {enlace.text.strip()}"
+                                url = enlace["href"]
+                                if url.startswith("/"):
+                                    url = f"https://www.inap.es{url}"
+                                noticias.append(("INAP", titulo, url))
+                                # 🔹 Búsqueda en Ministerio de Hacienda
+                                
+                elif "hacienda.gob.es" in url:
+                    items = soup.find_all("a", class_="enlace-noticia")
+                    for item in items:
+                        titulo = item.text.strip()
+                        enlace = item["href"] if item.has_attr("href") else url
+                        noticias.append((fuente, titulo, enlace))
+                        
         except requests.exceptions.RequestException as e:
-            logging.error(f"Error consultando {fuente}: {e}")
+            logging.error(f"❌ Error consultando {fuente}: {e}")
 
     return noticias
+
 
 def filtrar_nuevas_noticias(noticias):
     """Verifica qué noticias son nuevas comparando con la base de datos."""
