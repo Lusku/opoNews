@@ -88,9 +88,16 @@ def filtrar_nuevas_noticias(noticias):
     return nuevas_noticias
 
 def enviar_mensaje_telegram(mensaje):
-    """Envía un mensaje al canal de Telegram."""
+    """Envía un mensaje al grupo de Telegram y muestra depuración."""
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
-    bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=mensaje, parse_mode="Markdown")
+
+    logging.info(f"📢 Enviando mensaje a chat_id={TELEGRAM_CHAT_ID}")
+
+    try:
+        response = bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=mensaje, parse_mode="Markdown")
+        logging.info(f"✅ Mensaje enviado con éxito: {response}")
+    except Exception as e:
+        logging.error(f"❌ Error al enviar mensaje: {e}")
 
 def tarea_diaria():
     """Función principal que consulta, filtra y envía las actualizaciones."""
