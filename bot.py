@@ -17,7 +17,6 @@ if not TELEGRAM_BOT_TOKEN:
 if not TELEGRAM_CHAT_ID:
     raise ValueError("❌ ERROR: La variable TELEGRAM_CHAT_ID no está configurada.")
 
-
 # Obtener la fecha actual
 hoy = datetime.date.today()
 url_boe = f"https://www.boe.es/boe/dias/{hoy.year}/{hoy.month:02}/{hoy.day:02}/"
